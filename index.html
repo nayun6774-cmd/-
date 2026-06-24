@@ -120,7 +120,7 @@ tbody tr:hover{background:#f9f8f4}
   <div class="topbar-center">
     <h1>대리점 평가기준</h1>
   </div>
-  <span class="sub">2026.06.24(수) 10:22 업데이트</span>
+  <span class="sub">2026.06.24(수) 10:36 업데이트</span>
 </div>
 
 <div class="layout">
@@ -516,14 +516,14 @@ function buildRankingSection(cat, containerId){
       <span>📊 ${cat} 종합순위 (${scored.length}개 대리점)</span>
       <button id="apply-btn-${cat}" onclick="applyRanking('${cat}')" style="font-size:13px;padding:6px 16px;border-radius:999px;border:.5px solid #d3d1c7;background:#fff;cursor:pointer;color:#5f5e5a;transition:.15s">순위 반영하기</button>
     </div>
-    <p class="rank-notice">💡 CS 마인드 점수를 모두 입력한 후 <strong>순위 반영하기</strong> 버튼을 클릭하세요. 담보대비채무 40점 + CS 마인드 60점 = 100점 만점</p>
+    <p class="rank-notice" style="line-height:1.8">💡 CS 마인드 점수를 모두 입력한 후 <strong>순위 반영하기</strong> 버튼을 클릭하세요.<br>담보대비 채권 40점 + CS 마인드 60점 = 100점 만점</p>
     <div class="dept-filter-bar" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${filterBtns}</div>
     <div style="overflow-x:auto">
     <table class="rank-table" id="ranktbl-${cat}">
       <thead><tr>
         <th style="width:50px">순위</th>
         <th>대리점명</th>
-        <th class="nr">담보채무<br><span style="font-weight:400;font-size:11px">40점 만점</span></th>
+        <th class="nr">담보대비 채권<br><span style="font-weight:400;font-size:11px">40점 만점</span></th>
         <th style="min-width:200px">CS 마인드<br><span style="font-weight:400;font-size:11px">클릭해서 점수 변경</span></th>
         <th class="nr">CS점수<br><span style="font-weight:400;font-size:11px">60점 만점</span></th>
         <th class="nr">종합점수<br><span style="font-weight:400;font-size:11px">100점 만점</span></th>
