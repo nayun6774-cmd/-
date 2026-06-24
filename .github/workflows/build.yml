@@ -5,6 +5,8 @@ on:
     paths:
       - 'clothing_raw.xls'
       - 'goods_raw.xls'
+  schedule:
+    - cron: '0 0 * * *'  # 매일 오전 9시 KST (UTC 0시)
   workflow_dispatch:
 
 permissions:
@@ -23,9 +25,12 @@ jobs:
           python-version: '3.11'
 
       - name: 필요한 패키지 설치
-        run: pip install pandas numpy xlrd
+        run: pip install pandas numpy xlrd gspread google-auth
 
       - name: 대시보드 생성
+        env:
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
         run: python process.py
 
       - name: 변경사항 커밋 & 푸시
