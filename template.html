@@ -88,19 +88,7 @@ tbody tr:hover{background:#f9f8f4}
 .sp-exc{font-size:12px;color:#A32D2D;min-width:70px;text-align:right}
 .leg-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#888780;margin-bottom:5px}
 .leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.rank-section{margin-bottom:28px}
-.rank-section-title{font-size:15px;font-weight:500;color:#1a1a18;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.rank-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;border:.5px solid #e0dfd8}
-.rank-table thead th{background:#f5f4f0;padding:10px 14px;text-align:left;font-weight:500;font-size:12px;color:#5f5e5a;border-bottom:.5px solid #e0dfd8;white-space:nowrap}
-.rank-table thead th.nr{text-align:right}
-.rank-table tbody td{padding:10px 14px;border-bottom:.5px solid #f1efe8;vertical-align:middle}
-.rank-table tbody tr:last-child td{border-bottom:none}
-.rank-table tbody tr:hover{background:#f9f8f4}
-.rank-num{font-size:15px;font-weight:600;color:#1a1a18;min-width:36px;text-align:center;display:inline-block}
-.rank-num.gold{color:#C8992A}.rank-num.silver{color:#7A7A7A}.rank-num.bronze{color:#9C6A3A}
-.score-total{font-size:15px;font-weight:600;color:#1a1a18;text-align:right}
-.score-bar-bg{width:100px;height:6px;background:#e0dfd8;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
-.score-bar-fill{height:100%;border-radius:3px;background:#378ADD}
+
 .cs-select{font-size:12px;padding:3px 6px;border-radius:6px;border:.5px solid #d3d1c7;background:#fff;cursor:pointer;color:#1a1a18}
 .cs-label{display:flex;align-items:center;gap:6px}
 .cs-desc{font-size:11px;color:#888780}
@@ -182,14 +170,7 @@ tbody tr:hover{background:#f9f8f4}
   <div class="sidebar-item" id="menu-용품" onclick="switchCat('용품',this)">
     <span class="icon">🏸</span> 용품
   </div>
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section">종합순위</div>
-  <div class="sidebar-item" id="menu-종합순위" onclick="switchCat('종합순위',this)">
-    <span class="icon">⭐</span> 의류
-  </div>
-  <div class="sidebar-item" id="menu-종합순위-용품" onclick="switchCat('종합순위-용품',this)">
-    <span class="icon">⭐</span> 용품
-  </div>
+
 </div>
 
 <div class="main-content">
@@ -226,17 +207,7 @@ tbody tr:hover{background:#f9f8f4}
   <div id="page-용품-E-BIZ팀" class="page"></div>
 </div>
 
-<div id="cat-종합순위" class="cat-page">
-  <div style="padding:20px 24px;max-width:1200px;margin:0 auto">
-    <div id="ranking-container-의류"></div>
-  </div>
-</div>
 
-<div id="cat-종합순위-용품" class="cat-page">
-  <div style="padding:20px 24px;max-width:1200px;margin:0 auto">
-    <div id="ranking-container-용품"></div>
-  </div>
-</div>
 
 </div>
 </div>
@@ -306,7 +277,7 @@ function buildAiDash(){
       allStores.push({code,name:base.name,salesperson:base.salesperson,dept,clothing:c,goods:g,csScore,keywords,memo,aiComment,totalScore,worstRisk,catLabel});
     });
   });
-  allStores.sort((a,b)=>a.totalScore-b.totalScore);
+  allStores.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
 
   const total=allStores.length;
   const safe=allStores.filter(s=>s.totalScore>=80).length;
@@ -612,66 +583,10 @@ function switchCat(cat,el){
   el.classList.add('active');
   document.querySelectorAll('.cat-page').forEach(p=>p.classList.remove('active'));
   document.getElementById('cat-'+cat).classList.add('active');
-  if(cat==='종합순위') buildRankingFor('의류');
-  if(cat==='종합순위-용품') buildRankingFor('용품');
+
 }
 
-const CS_LABELS={1:{label:'1 - 미흡',desc:'응대 불량, 반품·클레임 잦음'},2:{label:'2 - 보통',desc:'기본 응대, 개선 여지 있음'},3:{label:'3 - 양호',desc:'원활한 소통, 불만 거의 없음'},4:{label:'4 - 우수',desc:'적극적 협조, 행사 참여 양호'},5:{label:'5 - 최우수',desc:'모범 대리점, 고객 만족도 최상'}};
-const csScores={};
-function calcDebtScore(ratio){if(ratio<=0)return 40;if(ratio<=0.6)return 40;if(ratio<=1.0)return 20;return 0;}
-function calcCsScore(cs){return(cs||1)*12;}
-function getAllStores(cat){
-  const depts=['영업1팀','영업2팀','E-BIZ팀'];const all=[];const seen={};
-  depts.forEach(dept=>{(DATA[cat][dept]||{stores:[]}).stores.forEach(s=>{if(!seen[s.code]&&s.receivable>100000){seen[s.code]=true;all.push({...s,dept});}});});
-  return all;
-}
-function buildRankingSection(cat){
-  const stores=getAllStores(cat);
-  const key=(code)=>cat+'-'+code;
-  const scored=stores.map(s=>{const cs=csScores[key(s.code)]||3;const debt=calcDebtScore(s.ratio);const csP=calcCsScore(cs);return{...s,cs,debt,csP,total:debt+csP};}).sort((a,b)=>b.total-a.total);
-  function renderRows(filter){
-    const filtered=filter?scored.filter(s=>s.dept===filter):scored;
-    return filtered.map((s,i)=>{
-      const rank=i+1;const rankClass=rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
-      const csOpts=[1,2,3,4,5].map(v=>`<option value="${v}" ${s.cs===v?'selected':''}>${CS_LABELS[v].label}</option>`).join('');
-      return `<tr><td><span class="rank-num ${rankClass}">${rank}</span></td><td><strong>${s.name}</strong><br><span style="font-size:11px;color:#888780">${s.dept} · ${s.salesperson}</span></td><td class="nr">${s.debt}점</td><td><div class="cs-label"><select class="cs-select" onchange="updateCS('${cat}','${s.code}',this.value)">${csOpts}</select></div><div class="cs-desc" id="csdesc-${cat}-${s.code}">${CS_LABELS[s.cs].desc}</div></td><td class="nr">${s.csP}점</td><td class="nr"><span class="score-total">${s.total}점</span><div><span class="score-bar-bg"><span class="score-bar-fill" style="width:${s.total}%"></span></span></div></td></tr>`;
-    }).join('');
-  }
-  const depts=['전체','영업1팀','영업2팀','E-BIZ팀'];
-  const filterBtns=depts.map(d=>`<button class="dept-filter-btn${d==='전체'?' active':''}" onclick="filterRank('${cat}','${d}',this)">${d}</button>`).join('');
-  return `<div class="rank-section"><div class="rank-section-title"><span>📊 ${cat} 종합순위 (${scored.length}개 대리점)</span><button id="apply-btn-${cat}" onclick="applyRanking('${cat}')" style="font-size:13px;padding:6px 16px;border-radius:999px;border:.5px solid #d3d1c7;background:#fff;cursor:pointer">순위 반영하기</button></div><p style="line-height:1.8;margin-bottom:12px;font-size:13px;color:#5f5e5a">💡 CS 마인드 점수 입력 후 <strong>순위 반영하기</strong> 버튼을 클릭하세요.</p><div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">${filterBtns}</div><div style="overflow-x:auto"><table class="rank-table"><thead><tr><th style="width:50px">순위</th><th>대리점명</th><th class="nr">담보대비 채권<br><span style="font-weight:400;font-size:11px">40점 만점</span></th><th style="min-width:200px">CS 마인드</th><th class="nr">CS점수<br><span style="font-weight:400;font-size:11px">60점 만점</span></th><th class="nr">종합점수</th></tr></thead><tbody id="rankbody-${cat}">${renderRows('')}</tbody></table></div></div>`;
-}
-const rankFilters={};
-function filterRank(cat,dept,el){
-  rankFilters[cat]=dept==='전체'?'':dept;
-  el.closest('div').querySelectorAll('.dept-filter-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  const stores=getAllStores(cat);
-  const key=(code)=>cat+'-'+code;
-  const scored=stores.map(s=>{const cs=csScores[key(s.code)]||3;const debt=calcDebtScore(s.ratio);const csP=calcCsScore(cs);return{...s,cs,debt,csP,total:debt+csP};}).sort((a,b)=>b.total-a.total);
-  const filter=rankFilters[cat]||'';
-  const filtered=filter?scored.filter(s=>s.dept===filter):scored;
-  const tbody=document.getElementById('rankbody-'+cat);if(!tbody)return;
-  tbody.innerHTML=filtered.map((s,i)=>{const rank=i+1;const rankClass=rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';const csOpts=[1,2,3,4,5].map(v=>`<option value="${v}" ${s.cs===v?'selected':''}>${CS_LABELS[v].label}</option>`).join('');return`<tr><td><span class="rank-num ${rankClass}">${rank}</span></td><td><strong>${s.name}</strong><br><span style="font-size:11px;color:#888780">${s.dept} · ${s.salesperson}</span></td><td class="nr">${s.debt}점</td><td><div class="cs-label"><select class="cs-select" onchange="updateCS('${cat}','${s.code}',this.value)">${csOpts}</select></div><div class="cs-desc" id="csdesc-${cat}-${s.code}">${CS_LABELS[s.cs].desc}</div></td><td class="nr">${s.csP}점</td><td class="nr"><span class="score-total">${s.total}점</span><div><span class="score-bar-bg"><span class="score-bar-fill" style="width:${s.total}%"></span></span></div></td></tr>`;}).join('');
-}
-function updateCS(cat,code,val){
-  csScores[cat+'-'+code]=parseInt(val);
-  const descEl=document.getElementById('csdesc-'+cat+'-'+code);
-  if(descEl)descEl.textContent=CS_LABELS[parseInt(val)].desc;
-  const btn=document.getElementById('apply-btn-'+cat);
-  if(btn){btn.style.background='#A32D2D';btn.style.color='#fff';btn.textContent='⚠️ 순위 반영하기';}
-}
-function applyRanking(cat){
-  const container=document.getElementById('ranking-container-'+cat);
-  if(!container)return;
-  container.dataset.built='';container.innerHTML=buildRankingSection(cat);
-}
-function buildRankingFor(cat){
-  const container=document.getElementById('ranking-container-'+cat);
-  if(!container||container.dataset.built)return;
-  container.innerHTML=buildRankingSection(cat);
-  container.dataset.built='1';
-}
+
 
 buildAiDash();
 buildPage('의류','인사총무팀');builtPages['의류-인사총무팀']=true;
