@@ -34,4 +34,5 @@ jobs:
           git config --local user.name "GitHub Action (자동 생성)"
           git add index.html
           git diff --staged --quiet || git commit -m "대시보드 자동 업데이트"
+          git pull --rebase origin main
           git push
