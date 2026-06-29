@@ -28,6 +28,7 @@ jobs:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SALES_SPREADSHEET_ID: ${{ secrets.SALES_SPREADSHEET_ID }}
         run: python process.py
       - name: 변경사항 커밋 & 푸시
         run: |
