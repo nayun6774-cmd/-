@@ -377,7 +377,7 @@ function buildAiDash(){
       const totalScore=Math.min(100,quantScore+csScore+partnershipScore);
       const catLabel=[c?'의류':'',g?'용품':''].filter(Boolean).join('+');
       allStores.push({code,name:base.name,salesperson:base.salesperson,dept,clothing:c,goods:g,csScore,partnershipScore,pGoods,pClothing,keywords,memo,aiComment,deductCollection,deductCollateral,collectionDays,quantScore,totalScore,worstRisk,catLabel});
-  });
+    });
   });
   allStores.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
 
