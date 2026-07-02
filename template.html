@@ -351,8 +351,8 @@ function buildAiDash(){
       if(!base) return;
       if(Math.abs((c||{}).receivable||0)<100000&&Math.abs((g||{}).receivable||0)<100000) return;
       const csData=CS_SHEET[base.name]||{};
-      const csScore=csData.score!=null?csData.score:20;
-      const partnershipScore=csData.partnership_score!=null?csData.partnership_score:20;
+      const csScore=Math.min(20,Math.max(0,csData.score!=null?csData.score:20));
+      const partnershipScore=Math.min(20,Math.max(0,csData.partnership_score!=null?csData.partnership_score:20));
       const pGoods=csData.p_goods||'';
       const pClothing=csData.p_clothing||'';
       const keywords=csData.keywords||'';
@@ -363,7 +363,7 @@ function buildAiDash(){
       const deductCollection=csData.deduct_collection!=null?csData.deduct_collection:0;
       const deductCollateral=csData.deduct_collateral!=null?csData.deduct_collateral:0;
       const collectionDays=csData.collection_days!=null?csData.collection_days:0;
-      const quantScore=Math.max(20,60-deductCollection-deductCollateral);
+      const quantScore=Math.min(60,Math.max(20,60-deductCollection-deductCollateral));
       const totalScore=Math.min(100,quantScore+csScore+partnershipScore);
       const catLabel=[c?'의류':'',g?'용품':''].filter(Boolean).join('+');
       allStores.push({code,name:base.name,salesperson:base.salesperson,dept,clothing:c,goods:g,csScore,partnershipScore,pGoods,pClothing,keywords,memo,aiComment,deductCollection,deductCollateral,collectionDays,quantScore,totalScore,worstRisk,catLabel});

@@ -7,6 +7,27 @@ from datetime import datetime, timedelta
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
+def parse_sheet_date(date_str):
+    """구글 시트 '작성일' 컬럼 값을 date 객체로 파싱. 실패하면 None."""
+    if not date_str:
+        return None
+    date_str = str(date_str).strip()
+    if not date_str:
+        return None
+    # 구글 시트가 날짜를 시리얼넘버(숫자)로 줄 수도 있음
+    try:
+        serial = float(date_str)
+        base = datetime(1899, 12, 30)
+        return (base + timedelta(days=serial)).date()
+    except ValueError:
+        pass
+    for fmt in ('%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d', '%Y-%m-%d %H:%M:%S', '%Y.%m.%d.'):
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+    return None
+
 # CS 키워드 정의
 RISK_KEYWORDS = {
     'high': ['연락두절', '약속불이행', '클레임다발', '폐업징후', '허위접수', '재고과다', '타사이탈', '무단온라인', '연락안됨', '잠수'],
@@ -163,14 +184,23 @@ def fetch_cs_data(store_debt_map={}):
         print(f"구글 시트 읽기 실패: {e}")
         return {}
 
-    # CS 시트 병합 (대리점명 기준)
+    today = datetime.now().date()
+    cur_year, cur_month = today.year, today.month
+    skipped_old = 0
+
+    # CS 시트 병합 (대리점명 기준, 이번 달 작성건만)
     merged = {}
     for row in records:
         name      = ' '.join(str(row.get('대리점명', '')).split())
         memo      = str(row.get('특이사항메모', '')).strip()
         p_goods   = str(row.get('파트너십_용품', '')).strip()
         p_cloth   = str(row.get('파트너십_의류', '')).strip()
+        written   = parse_sheet_date(row.get('작성일', ''))
         if not name:
+            continue
+        # 작성일이 있는데 이번 달이 아니면 제외 (과거 메모 누적 방지)
+        if written and (written.year != cur_year or written.month != cur_month):
+            skipped_old += 1
             continue
         if name not in merged:
             merged[name] = {'memos': [], 'p_goods': '', 'p_clothing': ''}
@@ -180,6 +210,9 @@ def fetch_cs_data(store_debt_map={}):
             merged[name]['p_goods'] = p_goods
         if p_cloth:
             merged[name]['p_clothing'] = p_cloth
+
+    if skipped_old:
+        print(f"  이번 달({cur_year}-{cur_month:02d}) 이전 작성 건 {skipped_old}개 제외")
 
     result = {}
     for name, data in merged.items():
