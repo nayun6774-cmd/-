@@ -358,6 +358,9 @@ function buildAiDash(){
       const keywords=csData.keywords||'';
       const memo=csData.memo||'';
       const aiComment=csData.ai_comment||'';
+      const aiAssessedRisk=csData.ai_assessed_risk||'';
+      const aiMismatch=!!csData.ai_mismatch;
+      const aiMismatchDirection=csData.ai_mismatch_direction||'';
       const order=['위기','경계','주의','적정','관리','해당없음'];
       const worstRisk=[c,g].filter(Boolean).reduce((w,s)=>order.indexOf(s.risk)<order.indexOf(w)?s.risk:w,'해당없음');
       const deductCollection=csData.deduct_collection!=null?csData.deduct_collection:0;
@@ -366,7 +369,7 @@ function buildAiDash(){
       const quantScore=Math.min(50,Math.max(20,50-deductCollection-deductCollateral));
       const totalScore=Math.min(100,quantScore+csScore+partnershipScore);
       const catLabel=[c?'의류':'',g?'용품':''].filter(Boolean).join('+');
-      allStores.push({code,name:base.name,salesperson:base.salesperson,dept,clothing:c,goods:g,csScore,partnershipScore,pGoods,pClothing,keywords,memo,aiComment,deductCollection,deductCollateral,collectionDays,quantScore,totalScore,worstRisk,catLabel});
+      allStores.push({code,name:base.name,salesperson:base.salesperson,dept,clothing:c,goods:g,csScore,partnershipScore,pGoods,pClothing,keywords,memo,aiComment,aiAssessedRisk,aiMismatch,aiMismatchDirection,deductCollection,deductCollateral,collectionDays,quantScore,totalScore,worstRisk,catLabel});
     });
   });
   allStores.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
@@ -460,6 +463,12 @@ function buildAiDash(){
       ? s.aiComment.replace(/\n/g,'<br>')
       : '구글 시트에 키워드와 메모를 입력하면 AI 분석이 자동 생성됩니다.';
 
+    const mismatchBadge = s.aiMismatch
+      ? (s.aiMismatchDirection==='severe'
+          ? `<span style="margin-left:6px;font-size:10px;font-weight:600;color:#A32D2D;background:#FCEBEB;padding:2px 7px;border-radius:10px">⚠️ AI가 더 심각하게 판단</span>`
+          : `<span style="margin-left:6px;font-size:10px;font-weight:600;color:#5f5e5a;background:#f0efe9;padding:2px 7px;border-radius:10px">AI가 더 완화하여 판단</span>`)
+      : '';
+
     html+=`
     <div class="dealer-card" id="aicard-${i}" data-grade="${rc.label}" data-dept="${s.dept}" data-cat="${s.catLabel}" data-name="${s.name}" onclick="toggleAiDet(${i},this)">
       <div class="crow">
@@ -468,6 +477,7 @@ function buildAiDash(){
         <div class="bwrap"><div class="blbl">종합점수</div><div class="btrack"><div class="bfill" style="width:${barW}%;background:${rc.bar}"></div></div></div>
         <div style="text-align:right"><div class="snum">${s.totalScore}</div><div class="sunit">/ 100</div></div>
         <span class="rpill ${rc.cls}">${rc.label}</span>
+        ${s.aiMismatch&&s.aiMismatchDirection==='severe'?'<span style="margin-left:4px" title="AI가 기계적 등급보다 더 심각하게 판단함">⚠️</span>':''}
       </div>
     </div>
     <div class="det-panel" id="aidet-${i}" style="display:none">
@@ -488,7 +498,7 @@ function buildAiDash(){
         ${(!kwHtml&&!s.memo)?'<div style="font-size:13px;color:#b4b2a9;margin-top:8px">메모를 입력하면 표시됩니다.</div>':''}
       </div>
       <div style="background:${aiBoxBg};border-radius:8px;padding:14px 16px;border-left:3px solid ${aiBoxBd}">
-        <div style="font-size:11px;font-weight:500;color:${aiLblColor};margin-bottom:5px">🤖 AI 위험탐지 분석</div>
+        <div style="font-size:11px;font-weight:500;color:${aiLblColor};margin-bottom:5px">🤖 AI 위험탐지 분석${s.aiAssessedRisk?` · AI 자체판단: <span style="font-weight:700">${s.aiAssessedRisk}</span>`:''}${mismatchBadge}</div>
         <div style="font-size:13px;color:${aiTxtColor};line-height:1.7">${aiCommentHtml}</div>
       </div>
     </div>`;
